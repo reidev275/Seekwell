@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Seekwell</id>
+    <version>1.0.0</version>
+    <authors>Reid Evans, Doug Walker</authors>
+    <owners>Reid Evans, Doug Walker</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Simple sql deserialization</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>Sql Orm</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+</package>

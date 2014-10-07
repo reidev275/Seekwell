@@ -1,0 +1,120 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Reflection;
+
+namespace Seekwell
+{
+	public class Deserializer : IDeserializer
+	{
+		static Dictionary<Type, Property[]> typeCache = new Dictionary<Type, Property[]>();
+
+		public IEnumerable<T> Deserialize<T>(IDataReader reader) where T : new()
+		{
+			var result = new List<T>();
+			var properties = GetProperties<T>();
+
+			Dictionary<int, Property> map = new Dictionary<int, Property>();
+			for (int i = 0; i < reader.FieldCount; i++)
+			{
+				var columnName = reader.GetName(i);
+				var property = GetMatchingProperty(properties, columnName);
+				if (property != null) map.Add(i, property);
+			}
+
+			while (reader.Read())
+			{
+				var row = new T();
+
+				foreach (var item in map)
+				{
+					var value = reader[item.Key];
+					if (value != DBNull.Value)
+					{
+						item.Value.SetValue(row, value);
+					}
+				}
+
+				result.Add(row);
+			}
+			return result;
+		}
+
+		static Property[] GetProperties<T>()
+		{
+			Property[] result;
+			if (typeCache.TryGetValue(typeof(T), out result))
+			{
+				return result;
+			}
+
+			var properties = ConvertPropertyInfo(typeof(T));
+
+			try
+			{
+				typeCache.Add(typeof(T), properties);
+			}
+			catch (Exception) { }
+
+			return properties;
+		}
+
+		static Property[] ConvertPropertyInfo(Type type)
+		{
+			var result = new List<Property>();
+			var properties = type.GetProperties();
+			foreach (var property in properties)
+			{
+				result.Add(new Property(property));
+			}
+			return result.ToArray();
+		}
+
+		static Property GetMatchingProperty(Property[] properties, string name)
+		{
+			foreach (var property in properties)
+			{
+				if (property.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase))
+					return property;
+			}
+			return null;
+		}
+
+		class Property
+		{
+			delegate object Converter(object value, Type targetType);
+
+			readonly PropertyInfo _property;
+			readonly Converter convert;
+
+			public Property(PropertyInfo property)
+			{
+				_property = property;
+				this.Name = property.Name;
+
+				this.Type = property.PropertyType.IsGenericType ? property.PropertyType.GetGenericArguments()[0] : property.PropertyType;
+
+				convert = property.PropertyType.IsEnum ? (Converter)this.ConvertStringToEnum : (Converter)Convert.ChangeType;
+			}
+
+			public Type Type { get; private set; }
+			public string Name { get; private set; }
+
+			public void SetValue(object obj, object value)
+			{
+				object typedValue = convert(value, this.Type);
+				_property.SetValue(obj, typedValue, null);
+			}
+
+			
+			private object ConvertStringToEnum(object value, Type targetType)
+			{
+				string valueAsString = value.ToString();
+				return Enum.Parse(targetType, valueAsString, true);
+			}
+			
+		}
+
+		
+	}
+}

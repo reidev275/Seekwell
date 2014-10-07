@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Seekwell.Async</id>
+    <version>1.0.0</version>
+    <authors>Reid Evans, Doug Walker</authors>
+    <owners>Reid Evans, Doug Walker</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Async extensions for Seekwell</description>
+    <releaseNotes>Initial Release</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>Seekwell Async Orm SQL</tags>
+  </metadata>
+</package>

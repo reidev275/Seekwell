@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seekwell", "Seekwell\Seekwell.csproj", "{100D006C-29FC-4165-AC98-1400E89E83A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seekwell.Async", "Seekwell.Async\Seekwell.Async.csproj", "{93AA4326-4D82-4B16-A2F7-F10F456795F8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{100D006C-29FC-4165-AC98-1400E89E83A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{100D006C-29FC-4165-AC98-1400E89E83A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{100D006C-29FC-4165-AC98-1400E89E83A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{100D006C-29FC-4165-AC98-1400E89E83A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93AA4326-4D82-4B16-A2F7-F10F456795F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93AA4326-4D82-4B16-A2F7-F10F456795F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93AA4326-4D82-4B16-A2F7-F10F456795F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93AA4326-4D82-4B16-A2F7-F10F456795F8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
