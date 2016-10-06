@@ -40,6 +40,7 @@
     <Compile Include="Deserializer.cs" />
     <Compile Include="IDeserializer.cs" />
     <Compile Include="IParameterSetter.cs" />
+    <Compile Include="IValueSetter.cs" />
     <Compile Include="ParameterSetter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

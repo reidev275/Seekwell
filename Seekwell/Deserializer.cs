@@ -14,7 +14,7 @@ namespace Seekwell
 			var result = new List<T>();
 			var properties = GetProperties<T>();
 
-			Dictionary<int, Property> map = new Dictionary<int, Property>();
+			Dictionary<int, IValueSetter> map = new Dictionary<int, IValueSetter>();
 			for (int i = 0; i < reader.FieldCount; i++)
 			{
 				var columnName = reader.GetName(i);
@@ -40,7 +40,30 @@ namespace Seekwell
 			return result;
 		}
 
-		static Property[] GetProperties<T>()
+        static IValueSetter GetMatchingProperty(Property[] properties, string name)
+        {
+            var propertyName = name;
+            var fieldName = name;
+
+            if (name.Contains("."))
+            {
+                propertyName = name.Substring(0, name.IndexOf("."));
+                fieldName = name.Replace(propertyName + ".", "");
+            }
+
+            foreach (var property in properties)
+            {
+                if (property.Name.Equals(propertyName, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    if (propertyName == name) return new PrimitiveSetter(property);
+                    return new ComplexSetter(property, fieldName);
+                }
+            }
+            return null;
+        }
+
+
+        static Property[] GetProperties<T>()
 		{
 			Property[] result;
 			if (typeCache.TryGetValue(typeof(T), out result))
@@ -69,52 +92,66 @@ namespace Seekwell
 			}
 			return result.ToArray();
 		}
-
-		static Property GetMatchingProperty(Property[] properties, string name)
-		{
-			foreach (var property in properties)
-			{
-				if (property.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase))
-					return property;
-			}
-			return null;
-		}
-
-		class Property
-		{
-			delegate object Converter(object value, Type targetType);
-
-			readonly PropertyInfo _property;
-			readonly Converter convert;
-
-			public Property(PropertyInfo property)
-			{
-				_property = property;
-				this.Name = property.Name;
-
-				this.Type = property.PropertyType.IsGenericType ? property.PropertyType.GetGenericArguments()[0] : property.PropertyType;
-
-				convert = property.PropertyType.IsEnum ? (Converter)this.ConvertStringToEnum : (Converter)Convert.ChangeType;
-			}
-
-			public Type Type { get; private set; }
-			public string Name { get; private set; }
-
-			public void SetValue(object obj, object value)
-			{
-				object typedValue = convert(value, this.Type);
-				_property.SetValue(obj, typedValue, null);
-			}
-
-			
-			private object ConvertStringToEnum(object value, Type targetType)
-			{
-				string valueAsString = value.ToString();
-				return Enum.Parse(targetType, valueAsString, true);
-			}
-			
-		}
-
-		
 	}
+
+
+    public class Property
+    {
+        delegate object Converter(object value, Type targetType);
+
+        readonly PropertyInfo _property;
+        readonly Converter convert;
+        readonly List<Property> children = new List<Property>();
+
+        public Property(PropertyInfo property)
+        {
+            _property = property;
+
+            if (property.PropertyType.Module.Name != "mscorlib.dll")
+            {
+                foreach (var child in property.PropertyType.GetProperties())
+                {
+                    children.Add(new Property(child));
+                }
+            }
+
+            this.Name = property.Name;
+            this.Type = property.PropertyType.IsGenericType ? property.PropertyType.GetGenericArguments()[0] : property.PropertyType;
+
+            convert = property.PropertyType.IsEnum ? (Converter)this.ConvertStringToEnum : (Converter)Convert.ChangeType;
+        }
+
+        public Type Type { get; private set; }
+        public string Name { get; private set; }
+
+        public void SetValue(object obj, object value)
+        {
+            object typedValue = convert(value, this.Type);
+            _property.SetValue(obj, typedValue, null);
+        }
+
+        public void SetChildValue(string propertyName, string field, object obj, object value)
+        {
+            foreach (var child in children)
+            {
+                if (child.Name == field)
+                {
+                    var property = obj.GetType().GetProperty(propertyName);
+                    var propVal = property.GetValue(obj, null);
+                    if (propVal == null)
+                    {
+                        propVal = property.PropertyType.GetConstructor(Type.EmptyTypes).Invoke(null);
+                        property.SetValue(obj, propVal, null);
+                    }
+                    child.SetValue(propVal, value);
+                }
+            }
+        }
+
+        object ConvertStringToEnum(object value, Type targetType)
+        {
+            string valueAsString = value.ToString();
+            return Enum.Parse(targetType, valueAsString, true);
+        }
+    }
 }
